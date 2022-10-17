@@ -1,0 +1,487 @@
+---
+title: "Simulación"
+author: "Yanink Neried Caro Vega y Lizbeth Naranjo Albarrán"
+date: "Proyecto I: Métodos Estadísticos para la Investigación  en VIH/SIDA"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Se presentan varios ejemplos de simulación:
+
+- Simular datos.
+
+- Obtener distribución de probabilidad usando información subjetiva 
+
+- Simular una respuesta de un modelo de regresión lineal. 
+
+- Simular una respuesta de un modelo de regresión logística. 
+
+- Simular una respuesta de un modelo de supervivencia o sobrevida. 
+
+- CCASAnet 
+
+\ 
+
+Scripts y bases de datos simulados de análisis y estudios publicados en CCASAnet:
+
+http://biostat.mc.vanderbilt.edu/wiki/Main/ArchivedAnalyses
+
+http://ccasanet.vanderbilt.edu/
+
+\ 
+
+**Cuando se tienen diferentes fuentes o valor puntuales que provienen de distintos estudios, se puden considerar rangos para los parámetros, y calcular una distribución de manera subjetiva.** 
+
+\pagebreak
+
+# Simular datos simples
+
+La simualción de los datos dependen de las características y del tipo de datos que se necesiten simular. 
+
+Es común que cuando el interés es generar variables relacionadas a ciertas características se elijan las distribuciones más conocidas. 
+
+\ 
+
+- Si los datos son binarios, $X\in\{0,1\}$, entonces usar $X\sim Bernoulli(\theta)$. 
+
+-- Género (hombre, mujer), donde la mitad de la población son hombres, $X\sim Bernoulli(0.5)$. 
+
+-- Enfermedad (enfermo, sano), donde el 20% de la población está enferma, $X\sim Bernoulli(0.2)$ . 
+
+\ 
+
+- Si los datos están definidos en $X\in\mathbb{R}$, frecuentemente se usa la v.a. $X\sim Normal(\mu,\sigma^2)$ o $X\sim Uniforme(a,b)$. 
+
+-- Niveles de CD4 con media 300 y desviación estándar 20, $X\sim Normal(\mu=300,\sigma=20)$.
+
+-- Edades definidas en un rango de 20 a 60, $X\sim Uniforme(20,60)$.
+
+\ 
+
+- Si los datos se refieren a probabilidades $\theta\in[0,1]$ entonces usar $\theta\in Beta(a,b)$.
+
+-- La probabilidad de enfermarse se distribuye como $\theta\sim Beta(5,15)$. 
+
+\ 
+
+- Si los datos se refieren a conteos $X\in\{0,1,2,\ldots\}$, entonces usar $X\sim Poisson(\lambda)$. 
+
+-- Se espera que lleguen 5 pacientes a un hospital en el intervalo de un minuto, $X\sim Poisson(5)$. 
+
+
+# Obtener distribución de probabilidad usando información subjetiva
+
+Si se tiene información acerca del comportamiento de unos datos, ésta se puede traducir en una distribución de probabilidad. 
+
+Este procedimiento es utilizado en estadística Bayesiana para construir distribuciones iniciales informativas (*informative prior distribution*), y se le conoce como **elicitar** (*elicite*). 
+
+\ 
+
+**Ejemplo Normal con Percentiles y Cuantiles** 
+
+Se tiene la información de que la temperatura diaria de la ciudad de México en octubre está resumida en los siguientes cuantiles: 
+
+| Percentile |  Cuantile |
+| --- | --- |
+| 0.50 | 25 ºC |      
+| 0.90 | 30 ºC |
+
+Si suponemos que los datos siguen una distribución $Normal(\mu,\sigma^2)$, entonces es necesario calcular $\mu$ y $\sigma$. 
+
+- A partir del cuantil $0.50$, como la distribución normal es simétrica, la mediana es igual a la media, por tanto, $\mu=25$.
+
+- Por propiedades de la distribución normal, si $X\sim Normal(\mu,\sigma^2)$, entonces $Z={X-\mu \over \sigma}\sim Normal(0,1)$. Se sabe que $P[X\leq30]=0.90$, entonces $$P\left(Z\leq{30-\mu \over \sigma}\right)=0.90$$ 
+
+El cuantil 0.90 de una normal estandar es 1.281552, entonces ${30-\mu \over \sigma}=1.281552$, y como $\mu=25$, 
+```{r}
+(30-25)/qnorm(0.90)
+```
+Entonces despejando $\sigma={30-25 \over 1.281552}=3.901521$. 
+
+\ 
+
+**Ejemplo Beta con Media y Percentiles**
+
+Se tiene información acerca de la prevalencia de una enfermedad, $\theta$ que es la proporción de sujetos infectados. Se sabe que la tasa de infección se encuentra entre 0.05 y 0.20 con un 95\% de probabilidad, y que la prevalencia promedio es de $0.10$. 
+
+Si nosotros queremos traducir (\textit{elicitar}) esta información en una distribución  de tipo $\theta\sim Beta(a,b)$. ¿Cuáles son los valores de $a$ y $b$? Tenemos que resolver el sistema de ecuaciones:
+\begin{eqnarray*}
+\mathbb{E}[\theta] = \frac{a}{a+b} &=& 0.10 \\
+\mathbb{P}[0.05<\theta<0.20] &=& 0.95 
+\end{eqnarray*}
+¿Cómo se calcula? Una simple solución es la siguiente:
+```{r}
+a = seq(1,20,by=0.1)    ### Conjuntos de posibles valores para a.
+b = a*(1-0.10)/0.10    ### A partir de la media se despeja b.
+proba = c()    ### Calcular la probabilidad acumulada P[0.05<\theta<0.20]
+for(i in 1:length(a)){ 
+  proba[i] = pbeta(0.20,a[i],b[i]) - pbeta(0.05,a[i],b[i]) }
+```
+Lo cual resulta aproximadamente  en  $a=8$ y $b=72$.
+```{r, echo=FALSE,warning=FALSE,message=FALSE,results='hide', fig.show = "hold", out.width = "50%"}
+plot(a,proba,pch=19)
+abline(h=0.95,col="blue",lwd=3)
+abline(v=8,col="red",lwd=3)
+```
+
+
+\pagebreak
+
+# Regresión Lineal
+
+- Simular una respuesta de un modelo de regresión lineal. 
+
+Se tiene la variable de interés $Y$ (variable respuesta o dependiente), $Y\in\mathbb{R}$, y se relaciona con un conjunto de covariables $x_1,\ldots,x_k$, a través de un modelo de regresión lineal:
+$$ Y = \beta_0 + \beta_1x_1 + \beta_2x_2 +\cdots+ \beta_kx_k + \varepsilon, \quad \varepsilon\sim Normal(0,\sigma^2) $$ 
+
+
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+n = 100   ### numero de sujetos 
+betas = as.vector(c(1,2,3))   ### coeficientes de regresion
+sigma2 = 4   ### varianza
+set.seed(12345)
+x1 = runif(n)   ### covariable x1
+x2 = runif(n)   ### covariable x2
+epsilon = rnorm(n,0,sqrt(sigma2))   ### simular error aleatorio
+eta = betas[3] + betas[1]*x1 + betas[2]*x2   ### predictor lineal
+y = eta + epsilon   ### respuesta aleatoria
+head(cbind(y,x1,x2,eta,epsilon),4)
+pairs(cbind(y,x1,x2))
+plot(eta,y, pch=19)
+modelo <- lm(y ~ x1+x2)   ### estimar parametros
+summary(modelo)
+```
+
+
+\ 
+
+# Regresión Logística
+
+- Simular una respuesta de un modelo de regresión logística. 
+
+Se tiene la variable de interés $Y$ binaria (variable respuesta o dependiente), $Y\in\{0,1\}$, y se relaciona con un conjunto de covariables $x_1,\ldots,x_k$, a través de un modelo de regresión logística:
+$$ \log\left({p \over 1-p}\right) = \beta_0 + \beta_1x_1 + \beta_2x_2 +\cdots+ \beta_kx_k $$ 
+o equivalentemente
+$$ p = {\exp\left(\beta_0 + \beta_1x_1 + \beta_2x_2 +\cdots+ \beta_kx_k\right) \over {1+ \exp\left(\beta_0 + \beta_1x_1 + \beta_2x_2 +\cdots+ \beta_kx_k\right)}} $$ 
+que es igual a la función de distribución acumulada (fda) de una distribución logística. 
+
+Si $X\sim Logistica(0,1)$ su fda es:
+$F_X(x) = {\exp(x) \over {1+ \exp(x)}} = {1 \over {1+ \exp(-x)}}.$
+
+\ 
+
+## Regresión logística usando coeficientes para la probabilidad de éxito
+
+
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+n = 100   ### numero de sujetos 
+K = 3   ### numero parametros de regresion
+betas = as.vector(c(2,3,-4))   ### coeficientes de regresion 
+set.seed(12345)
+x1 = runif(n,0,2)   ### covariable x1
+x2 = runif(n)   ### covariable x2
+eta = betas[3] + betas[1]*x1 + betas[2]*x2   ### combinacion lineal
+p = plogis(eta)   ### se calcula p=P[Y=1] 
+u = runif(n)
+y = ifelse(p>u,1,0)   ### simular la variable respuesta Y de manera aleatoria
+y = rep(NA,n)
+for(i in 1:n){
+  y[i] = rbinom(1,size=1,prob=p[i])   ### Bernoulli
+}
+head(cbind(y,x1,x2,eta,p,u),4)
+pairs(cbind(y,x1,x2))
+plot(eta,y)
+points(eta,p,col="blue",pch=19)
+modelo <- glm(y ~ x1+x2, family=binomial(link="logit"))   ### estimar parametros
+summary(modelo)
+```
+
+
+\pagebreak
+
+## Odds ratio 
+
+Algunas veces los resultados los presentan como odds, entonces es cuestión de entender qué significa este valor. 
+
+Suponga que se estudia la prevalencia de una enfermedad, es decir, la probabilidad de que un paciente se enferme, $p=P[Y=1]$. 
+Los odds (*momios*) se definen como:
+\begin{eqnarray*}
+odds &=& {p \over 1-p}  
+\end{eqnarray*}
+
+Esto es la razón de enfermos sobre sanos. Por ejemplo, si $p=0.2$, entonces 
+\begin{eqnarray*}
+odds &=& {0.2 \over 1-0.2} = {0.2 \over 0.8} = {2 \over 8}  = {1 \over 4} 
+\end{eqnarray*}
+indicando que por cada 1 enfermo existen 4 sanos.
+
+\ 
+
+Si se tienen los odds de dos poblaciones, por ejemplo, de mujeres $odds_1$ y hombres $odds_2$, entonces el *odds ratio* es:
+\begin{eqnarray*}
+{odds_1 \over odds_2} &=& {{p_1 \over 1-p_1} \over {p_2 \over 1-p_2}}  
+\end{eqnarray*}
+donde en este caso $p_1=P[Y_{mujer}=1]$ y $p_2=P[Y_{hombre}=1]$. 
+
+Por ejemplo, si $p_1=0.2$, y $p_2=0.25$ entonces 
+\begin{eqnarray*}
+odds ratio = {odds_1 \over odds_2} &=& {{0.2 \over 0.8} \over {0.25 \over 0.75}} 
+= {{1 \over 4} \over {1 \over 3}} 
+= {3 \over 4} 
+\end{eqnarray*}
+indicando que por cada 3 enfermo mujer existen 4 enfermos hombres.
+
+\pagebreak
+
+# Modelos paramétricos de supervivencia
+
+- Simular una respuesta de un modelo de supervicencia/sobrevida. 
+
+- Genera un modelo de supervivencia paramétrico, usando una función de supervivencia del tipo: 
+$$S(t) = P[T>t]$$
+con $T$ v.a. Weibull, exponential, gamma, log-logistic, o log-normal.
+
+
+Covariables
+```{r,warning=FALSE,message=FALSE,}
+library(survival)
+library(muhaz)
+N = 1000   ### numero de sujetos 
+K = 2   ### numero parametros de regresion
+betas = as.vector(c(3,1))   ### coeficientes de regresion 
+x1 = runif(N)   ### covariable x1
+x2 = sample(x=c(0,1), size=N, prob=c(0.5,0.5), replace=TRUE)   ### covariable x2 binaria
+XBeta = betas[1]*x1 + betas[2]*x2   ### combinacion lineal
+```
+Simular censuras
+```{r}
+censuraProporcion = 0.2   ### proporcion de datos censurados
+censura = sample(x=c(0,1), size=N, prob = c(censuraProporcion, 1-censuraProporcion), replace=TRUE) 
+head(cbind(x1,x2,censura),4)
+```
+
+**Simular tiempos de supervivencia de una familia parametrica Exponencial**
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+tiempoExp = rexp(n=N, exp(-XBeta))   ### exponential
+ajusteExp <- survfit(Surv(tiempoExp,censura)~x2, type = "kaplan-meier", 
+conf.type="log-log", conf.int=0.95)
+plot(ajusteExp,conf.int=T,main="Kaplan-Meier Exponential",
+     col=c("blue","blue","blue","red","red","red"),xlim=c(0,250))
+modExp <- survreg(Surv(tiempoExp, censura) ~ 0+x1+x2, dist="exponential")
+summary(modExp)
+```
+
+**Simular tiempos de supervivencia de una familia parametrica Weibull**
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+sigma = 3   ### parametro para weibull
+tiempoWeibull = rweibull(n=N, shape=1/sigma, scale=exp(XBeta))   ### Weibull
+ajusteWeibull <- survfit(Surv(tiempoWeibull,censura)~x2, type = "kaplan-meier", 
+conf.type="log-log", conf.int=0.95)
+plot(ajusteWeibull,conf.int=T,main="Kaplan-Meier Weibull",
+     col=c("blue","blue","blue","red","red","red"),xlim=c(0,250))
+modWeibull <- survreg(Surv(tiempoWeibull, censura) ~ 0+x1+x2, dist="weibull")
+summary(modWeibull)
+```
+
+**Simular tiempos de supervivencia de una familia parametrica LogLogistic**
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+scale = 3   ### parametro para loglogistic
+gamma = (1/scale)   ### parametro para loglogistic
+U = runif(n=N)
+tiempoLogLogistic = ( (U/(1 - U))^(1/gamma) ) * exp(XBeta)   ### loglogistic
+ajusteLogLogistic <- survfit(Surv(tiempoLogLogistic,censura)~x2, type = "kaplan-meier", 
+conf.type="log-log", conf.int=0.95)
+plot(ajusteLogLogistic,conf.int=T,main="Kaplan-Meier LogLogistic",
+     col=c("blue","blue","blue","red","red","red"),xlim=c(0,500))
+modLogLogistic <- survreg(Surv(tiempoLogLogistic, censura) ~ 0+x1+x2, dist="loglogistic")
+summary(modLogLogistic)
+```
+
+**Simular tiempos de supervivencia de una familia parametrica LogNormal**
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+scale = 3 ### parametro para lognormal
+tiempoLogNormal = rlnorm(n = N, meanlog = XBeta, sdlog = scale)   ### lognormal  
+ajusteLogNormal <- survfit(Surv(tiempoLogNormal,censura)~x2, type = "kaplan-meier", 
+conf.type="log-log", conf.int=0.95)
+plot(ajusteLogNormal,conf.int=T,main="Kaplan-Meier LogNormal",
+     col=c("blue","blue","blue","red","red","red"),xlim=c(0,500))
+modLogNormal <- survreg(Surv(tiempoLogNormal, censura) ~ 0+x1+x2, dist="lognormal")
+summary(modLogNormal)
+```  
+  
+  
+
+
+\pagebreak
+
+# Usando base de datos CCASAnet
+
+Scripts y bases de datos simulados de análisis y estudios publicados en CCASAnet:
+
+http://biostat.mc.vanderbilt.edu/wiki/Main/ArchivedAnalyses
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(car)
+library(dplyr)
+
+setwd("~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/")
+dir <- "~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/"
+```
+
+```{r}
+art <- read.csv(paste0(dir,"art_sim.csv"))
+basic <- read.csv(paste0(dir,"basic_sim.csv"))
+follow <- read.csv(paste0(dir,"follow_sim.csv"))
+lab_cd4 <- read.csv(paste0(dir,"lab_cd4_sim.csv"))
+lab_rna <- read.csv(paste0(dir,"lab_rna_sim.csv"))
+visit <- read.csv(paste0(dir,"visit_sim.csv"))
+
+dim(art)
+dim(basic)
+dim(follow)
+dim(lab_cd4)
+dim(lab_rna)
+dim(visit)
+head(art,3)
+head(basic,3)
+head(follow,3)
+head(lab_cd4,3)
+head(lab_rna,3)
+head(visit,3)
+```
+
+Cambiar formato de las fechas. 
+
+```{r}
+class(basic$birth_d)
+basic$birth_d <- as.Date(basic$birth_d,"%Y-%m-%d")
+class(basic$birth_d)
+
+basic$baseline_d <- as.Date(basic$baseline_d,"%Y-%m-%d")
+follow$l_alive_d <- as.Date(follow$l_alive_d,"%Y-%m-%d")
+visit$visit_d <- as.Date(visit$visit_d,"%Y-%m-%d")
+lab_cd4$cd4_d <- as.Date(lab_cd4$cd4_d,"%Y-%m-%d")
+```
+
+\pagebreak 
+
+## Frequency of non-communicable diseases in people 50 years of age and older receiving HIV care in Latin America 
+
+** Analyses were performed according to age at enrollment
+into HIV care ( $<$ 50yo and $\geq$ 50yo) (years old). Most common NCDs (non-communicable diseases) at the last visit in each age-group at enrollment were dyslipidemia (36% in $<$ 50yo and 28% in $\geq$ 50yo), hypertension (17% and 18%), psychiatric disorders (15% and 10%), and diabetes (11% and 12%). **
+
+\ 
+
+Unir bases de datos.
+
+```{r}
+datos_bf <- merge(basic,follow, by=c("patient","site"),all=TRUE)
+datos_bfv <- merge(datos_bf,visit, by=c("patient","site"),all=TRUE)
+datos_bfv4 <- merge(datos_bfv,lab_cd4, by=c("patient","site"), all.x=FALSE,all.y=FALSE,nu.dups=TRUE)
+
+### Edad al momento de la muestra de CD4 
+datos_bfv4$edad <- as.numeric(difftime(datos_bfv4$cd4_d,datos_bfv4$birth_d, units="auto"))/365.25
+
+patient50agemayor = unique(datos_bfv4$patient[datos_bfv4$edad>=50 & datos_bfv4$age>=50])
+patient50agemenor = unique(datos_bfv4$patient[datos_bfv4$edad>=50 & datos_bfv4$age<50])
+(N50mayor = n_distinct(patient50agemayor))
+(N50menor = n_distinct(patient50agemenor))
+```
+
+Seleccionar muestra de los que cumplen las características. 
+
+```{r}
+diabetes50mayor = sample(c(1,0),size=N50mayor,replace=TRUE,prob=c(12,88))
+table(diabetes50mayor)/N50mayor 
+diabetes50menor = sample(c(1,0),size=N50menor,replace=TRUE,prob=c(11,89))
+table(diabetes50menor)/N50menor 
+
+diseases = data.frame(patient=basic$patient, site=basic$site) 
+diseases$diabetes_y = 0
+diseases$diabetes_d = as.Date(NA)
+```
+
+Simular la fecha en la que se diagnostica, tomando como base las fechas de CD4.
+
+```{r}
+for(i in 1:N50mayor){
+  if(diabetes50mayor[i]==1){
+    id = patient50agemayor[i] 
+    datos_id = subset(datos_bfv4,patient==id)
+    id.num = which(diseases$patient==as.character(id)) 
+    diseases$diabetes_y[id.num] = 1 
+    diseases$diabetes_d[id.num] = sample(datos_id$cd4_d,size=1)
+  }
+}
+for(i in 1:N50menor){
+  if(diabetes50menor[i]==1){
+    id = patient50agemenor[i] 
+    datos_id = subset(datos_bfv4,patient==id & datos_bfv4$edad>=50)
+    id.num = which(diseases$patient==as.character(id)) 
+    diseases$diabetes_y[id.num] = 1 
+    diseases$diabetes_d[id.num] = sample(datos_id$cd4_d,size=1)
+  }
+}
+table(diseases$diabetes_y)/(N50mayor+N50menor)
+head(diseases)
+```
+
+\pagebreak
+
+## Increased Mortality After Tuberculosis Treatment Completion in Persons Living With Human Immunodeficiency Virus in Latin America 
+
+**We assessed the association between cured tuberculosis (TB) and mortality among persons living with human immunodeficiency virus (HIV) in Latin America. We compared survival among persons with and without TB at enrollment in HIV care, starting 9 months after clinic enrollment. In multivariable analysis, TB was associated with higher long-term mortality (hazard ratio, 1.57; 95% confidence interval, 1.25–1.99).** 
+
+```{r}
+datos_bfvd <- merge(datos_bfv,diseases, by=c("patient","site"), all.x=FALSE,all.y=FALSE,nu.dups=TRUE)
+N = dim(datos_bfvd)[1]
+datos_bfvd$tuberculosis_y = sample(c(1,0),size=N,replace=TRUE,prob=c(6.8,93.2))
+```
+
+```{r, warning=FALSE,message=FALSE, fig.show = "hold", out.width = "50%"} 
+attach(datos_bfvd)
+
+beta_HR_TB = log(1.57) 
+beta_HR_CD4 = log(1.57) 
+beta_HR_age = log(1.56) 
+beta_HR_edu = log(1.24) 
+
+CD4count = rnorm(N,mean=227,sd=45) ### median baseline CD4 count was 227 cells/mm3 (IQR,90–386) 
+lowerCD4count = ifelse(CD4count<227,1,0)
+educa = rbinom(N,size=1,prob=0.15) ### patients (15%) had no education or primary school only
+ageolder = ifelse(age>35,1,0)
+
+Xbeta = tuberculosis_y*beta_HR_TB + lowerCD4count*beta_HR_CD4 + 
+  educa*beta_HR_edu + ageolder*beta_HR_age 
+
+sigma = 3   ### parametro para weibull
+tiempo = rweibull(n=N, shape=1/sigma, scale=exp(XBeta))
+
+muerte = rep(0,N)
+muerte[tuberculosis_y==1] = sample(c(1,0),size=sum(tuberculosis_y==1),replace=TRUE,
+                                   prob=c(10.2,89.8))
+muerte[tuberculosis_y==0] = sample(c(1,0),size=N-sum(tuberculosis_y==1),replace=TRUE,
+                                   prob=c(5.6,94.4))
+
+mod_cox <- coxph(Surv(tiempo, muerte) ~ tuberculosis_y + lowerCD4count + educa + ageolder )
+summary(mod_cox)
+km <- survfit(Surv(tiempo, muerte) ~ tuberculosis_y, type = "kaplan-meier",conf.type="log-log")
+plot(km, conf.int=T,xlab="time", ylab="Survival", lty=c(1,4), 
+     lwd=2, xlim=c(0,300), col=c("blue","blue","blue","red","red","red"))
+legend("topright", c("No Baseline TB","Baseline TB"), lty=c(1,4),col=c("blue","red"))
+
+plot(km, conf.int=T,xlab="time", fun="event", ylab="Probability of Death", lty=c(1,4), 
+     lwd=2, xlim=c(0,300), col=c("blue","blue","blue","red","red","red"))
+legend("topright", c("No Baseline TB","Baseline TB"), lty=c(1,4),col=c("blue","red")) 
+
+```
+
+
+
+
+
