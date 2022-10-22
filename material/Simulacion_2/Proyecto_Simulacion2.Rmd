@@ -24,8 +24,11 @@ library(ggplot2)
 library(car)
 library(dplyr)
 
-setwd("~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/")
-dir <- "~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/"
+#setwd("~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/")
+#dir <- "~/Documents/_NotasCiencias/ProyectoVIH/Proyecto06_Simulacion/CCASAnet_Data/mock-ccasanet-data-2017-01-19/"
+
+setwd("~/GitHub/Proyecto/material/Simulacion_2/")
+dir <- "~/GitHub/Proyecto/material/Simulacion_2/"
 ```
 
 ```{r}
