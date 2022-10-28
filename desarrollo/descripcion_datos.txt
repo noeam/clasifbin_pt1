@@ -1,0 +1,32 @@
+Datos Personales:
+	- Sexo: id_sexo
+	- Edad: Aedad
+	- Nivel de Estudios: id_gestud
+
+Estilo de vida:
+	- Ejercicio: (ejer30, ejer20, ejer10, ejer5, ejer1, ejer_act) [1-8]
+
+Autoevaluación de la salud:
+	- Salud: (salud_act, salud1, salud5, salud10, salud20, salud30) [1-8]
+	- Peso: (peso_act, peso1, peso2, peso10, peso20, peso30) [1-8]
+	- Peso actualmente: peso [entero] ******* util solo para calcular IMC, pero tengo AIMC
+	- Estatura: estatura [entero]  ******* util solo para calcular IMC, pero tengo AIMC
+	- Acciones a tomar por el peso: pess_acc [1-5]
+	- Peso donde estoy y me gustaria: peso_ehoy, peso_edes [1-10]
+
+Antropometria:
+	- IMC: IMC [1-6]
+
+Otros:
+	- dpfolio
+	- AAedad
+	- AIMC
+	- 
+
+#datos$id_gestud <- factor(datos$id_gestud,
+#                        levels = c("N","P","S","B",
+#                                   "T","L","M","D",
+#                                   "Z","O"),
+#                        labels = c("Ninguno","Primaria","Secundaria","Bachillerato",
+#                                   "Carrera Técnica","Licenciatura","Maestría","Doctorado",
+#                                   "Post-Doctorado","Otro"))
