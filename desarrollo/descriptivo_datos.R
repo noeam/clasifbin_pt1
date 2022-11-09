@@ -11,7 +11,7 @@ gc()
 #           'peso_acc', 'peso_ehoy', 'peso_edes')
 #df <- datos[,variables]
 #write.csv(df, "datos_proyecto.csv")
-datos <- read.csv("data/datos_proyecto.csv", header = TRUE)
+datos <- read.csv("datos_proyecto.csv", header = TRUE)
 str(datos)
 summary(datos)
 
@@ -39,7 +39,7 @@ library(tidyverse)
 library(ggpubr)
 
 # Por sexo
-bsex <- ggplot(data = datos, aes(x = id_sexo, fill=id_sexo)) +
+(bsex <- ggplot(data = datos, aes(x = id_sexo, fill=id_sexo)) +
   geom_bar(stat = "count", colour = "white") +
   ggtitle("Participantes por sexo") + 
   ylab("Cantidad") +
@@ -47,10 +47,10 @@ bsex <- ggplot(data = datos, aes(x = id_sexo, fill=id_sexo)) +
   stat_count(geom = "text", 
              aes(label = stat(count)),
              position=position_stack(0.5),
-             colour="white")
+             colour="white"))
 
 # Por grupo de edad
-bedad <- ggplot(data = datos, aes(x = AAedad, fill = AAedad)) +
+(bedad <- ggplot(data = datos, aes(x = AAedad, fill = AAedad)) +
   geom_bar(stat = "count", colour = "white") +
   ggtitle("Participantes por categoria de edad") + 
   ylab("Cantidad") +
@@ -58,10 +58,10 @@ bedad <- ggplot(data = datos, aes(x = AAedad, fill = AAedad)) +
   stat_count(geom = "text", 
              aes(label = stat(count)),
              position=position_stack(0.5),
-             colour="white")
+             colour="white"))
 
 # Por grado de estudios
-bestud <- ggplot(data = datos, aes(x = id_gestud, fill = id_gestud)) +
+(bestud <- ggplot(data = datos, aes(x = id_gestud, fill = id_gestud)) +
   geom_bar(stat = "count", colour = "white") +
   ggtitle("Participantes por grado de estudios") + 
   ylab("Cantidad") +
@@ -71,7 +71,8 @@ bestud <- ggplot(data = datos, aes(x = id_gestud, fill = id_gestud)) +
              position=position_stack(0.5),
              colour="white") +
   scale_x_discrete(limits = c("Prim", "Sec", "Bach", "CarTec", "Lic",
-                              "Mast", "Doc", "PDoc", "Otro"))
+                              "Mast", "Doc", "PDoc", "Otro")))
+
 # Juntamos sexo, edad y grado de estudios
 ggpubr::ggarrange(bsex, bedad, bestud, 
                   labels = c("1", "2","3"),
@@ -88,7 +89,14 @@ ggplot(data = datos, aes(x = AIMC, fill = AIMC)) +
              position=position_stack(0.5),
              colour="white")
 
+
+library(lessR)
+###############################################################################
 # Por grupo de edad coloreados por IMC
+AAedad <- datos$AAedad
+AIMC <- datos$AIMC
+b1 <- BarChart(x = AAedad, by = AIMC, stack100 = TRUE)
+
 ggplot(data = datos, aes(x = AAedad, fill = AIMC)) +
   geom_bar(stat = "count", colour = "white") +
   ggtitle("Participantes por grupo de edad e IMC") + 
@@ -99,16 +107,9 @@ ggplot(data = datos, aes(x = AAedad, fill = AIMC)) +
              position=position_stack(0.5),
              colour="white") 
 
-# Por grupo de edad coloreados por IMC
-ggplot(data = datos, aes(x = AAedad, fill = AIMC)) +
-  geom_bar(stat = "count", colour = "white") +
-  ggtitle("Participantes por grupo de edad e IMC") + 
-  ylab("Cantidad") +
-  xlab("Categoria de edad") + 
-  stat_count(geom = "text", 
-             aes(label = stat(count)),
-             position=position_stack(0.5),
-             colour="white") 
+AAedad <- datos$AAedad
+peso_ehoy <- datos$peso_ehoy
+b <- BarChart(x = AAedad, by = peso_ehoy, stack100 = TRUE)
 
 ggplot(data = datos, aes(x = AAedad, fill = peso_ehoy)) +
   geom_bar(stat = "count", colour = "white") +
@@ -119,6 +120,10 @@ ggplot(data = datos, aes(x = AAedad, fill = peso_ehoy)) +
              aes(label = stat(count)),
              position=position_stack(0.5),
              colour="white")
+
+AAedad <- datos$AAedad
+peso_edes <- datos$peso_edes
+b <- BarChart(x = AAedad, by = peso_edes, stack100 = TRUE)
 
 ggplot(data = datos, aes(x = AAedad, fill = peso_edes)) +
   geom_bar(stat = "count", colour = "white") +
@@ -131,6 +136,10 @@ ggplot(data = datos, aes(x = AAedad, fill = peso_edes)) +
              colour="white")
 
 # Quieren bajar de peso
+AAedad <- datos$AAedad
+peso_acc <- datos$peso_acc
+b2 <- BarChart(x = AAedad, by = peso_acc, stack100 = TRUE)
+
 ggplot(data = datos, aes(x = AAedad, fill = peso_acc)) +
   geom_bar(stat = "count", colour = "white") +
   ggtitle("Acciones a realizar por parte de los participantes por grupo de edad") + 
@@ -146,11 +155,19 @@ ggplot(data = datos, aes(x = ejer_act, fill = AAedad)) +
   geom_bar() +
   ggtitle("Cantidad de personas que realizan ejercicio categorizado en horas por semana") + 
   ylab("Cantidad") +
-  xlab("Horas de ejercicio por semana") + 
-  stat_count(geom = "text", 
-             aes(label = stat(count)),
-             position=position_stack(0.5),
-             colour="white")
+  xlab("Horas de ejercicio por semana")
+  #stat_count(geom = "text", 
+  #           aes(label = stat(count)),
+  #           position=position_stack(0.5),
+  #           colour="white")
+bact <- ggplot(data = datos, aes(x = ejer_act, fill = AAedad)) +
+  geom_bar() +
+  ylab("Cantidad") +
+  xlab("Horas de ejercicio por semana")
+#stat_count(geom = "text", 
+#           aes(label = stat(count)),
+#           position=position_stack(0.5),
+#           colour="white")
 
 b1 <- ggplot(data = datos, aes(x = ejer1, fill = AAedad)) +
   geom_bar() +
@@ -177,8 +194,11 @@ b30 <- ggplot(data = datos, aes(x = ejer30, fill = AAedad)) +
   ylab("Cantidad") +
   xlab("Horas de ejercicio por semana")
 
-ggpubr::ggarrange(b1, b5, b10, b20, b30, 
-                  labels = c("1", "5","10", "20", "30"),
+ggpubr::ggarrange(bact, b1, b5, b10, b20, b30, 
+                  labels = c("Actual","1", "5","10", "20", "30"),
                   ncol = 3, nrow = 2)
+
+ggpubr::ggarrange(b1, b2,
+                  ncol = 2, nrow = 1)
 
 
