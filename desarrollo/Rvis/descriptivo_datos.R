@@ -151,7 +151,7 @@ ggplot(data = datos, aes(x = AAedad, fill = peso_acc)) +
              colour="white")
 
 # horas de ejercicio a la semana actualmente
-ggplot(data = datos, aes(x = ejer_act, fill = AAedad)) +
+ggplot(data = df2, aes(x = ejer_act, fill = AAedad)) +
   geom_bar() +
   ggtitle("Cantidad de personas que realizan ejercicio categorizado en horas por semana") + 
   ylab("Cantidad") +
@@ -160,6 +160,28 @@ ggplot(data = datos, aes(x = ejer_act, fill = AAedad)) +
   #           aes(label = stat(count)),
   #           position=position_stack(0.5),
   #           colour="white")
+
+(n <- plyr::count(datos$ejer_act) )
+n$time <- "actualmente"
+(n2 <- plyr::count(datos$ejer1) )
+n2$time <- "hace 1 año"
+(n3 <- plyr::count(datos$ejer5) )
+n3$time <- "hace 5 años"
+(n4 <- plyr::count(datos$ejer10) )
+n4$time <- "hace 10 años"
+
+df2 <- rbind(n,n2,n3,n4)
+
+ggplot(data=df2, aes(x = x, y = freq, color=time)) +
+  geom_line()+
+  geom_point() +
+  ggtitle("Cantidad de personas que realizan ejercicio en horas por semana") + 
+  ylab("Cantidad") +
+  xlab("Horas de ejercicio por semana") +
+  xlim(-1, 23)
+
+
+
 bact <- ggplot(data = datos, aes(x = ejer_act, fill = AAedad)) +
   geom_bar() +
   ylab("Cantidad") +
