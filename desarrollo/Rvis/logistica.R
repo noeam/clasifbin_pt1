@@ -55,6 +55,22 @@ BarChart(x = ejer_0, by = obesidad, stack100 = TRUE)
 BarChart(x = obesidad, by = ejer_1, stack100 = TRUE)
 
 
+
+#--------------------------------------*----------------------------------------
+#---------------------- Conteos Naive   ----------------------------------------
+#--------------------------------------*----------------------------------------
+nrow(datos[datos$obesity == 1, ])
+nrow(datos[datos$ejer_0 == "B", ])
+nrow(datos[datos$ejer_1 == "M", ])
+nrow(datos[datos$ejer_5 == "M", ])
+nrow(datos[datos$ejer_10 == "M", ])
+nrow(datos[datos$obesity == 1 & datos$ejer_0 == "B", ])
+nrow(datos[datos$obesity == 1 & datos$ejer_1 == "M", ])
+nrow(datos[datos$obesity == 1 & datos$ejer_5 == "M", ])
+nrow(datos[datos$obesity == 1 & datos$ejer_10 == "M", ])
+nrow(datos[datos$obesity == 0, ])
+
+
 #--------------------------------------*----------------------------------------
 #---------------------- Regresion Logística  -----------------------------------
 #--------------------------------------*----------------------------------------
