@@ -1,6 +1,6 @@
 # Primera parte del proyecto de prediccion de obesidad utilizando habitos de ejercicio.
 
-Resultados en: **[Reporte pdf](https://github.com/noeam/proyecto_pt1/blob/main/Proyecto1.pdf)**
+Resultados en: **[Proyecto1.pdf](https://github.com/noeam/proyecto_pt1/blob/main/Proyecto1.pdf)**
 
 Principales archivos de codigo: 
 - [Visualizacion](https://github.com/noeam/proyecto_pt1/blob/main/desarrollo/Rvis/descriptivo_datos.R)
