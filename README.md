@@ -2,6 +2,9 @@
 
 Resultados en: **[Proyecto1.pdf](https://github.com/noeam/proyecto_pt1/blob/main/Proyecto1.pdf)**
 
+- REGRESION LOGISTICA
+- NAIVE BAYES
+
 Principales archivos de codigo: 
 - [Visualizacion](https://github.com/noeam/proyecto_pt1/blob/main/desarrollo/Rvis/descriptivo_datos.R)
 - [RegLogistica](https://github.com/noeam/proyecto_pt1/blob/main/desarrollo/Rvis/logistica.R)
